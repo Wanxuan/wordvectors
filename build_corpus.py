@@ -1,5 +1,5 @@
 # coding: utf-8
-#!/usr/bin/python2
+#!/usr/bin/python3
 import argparse
 import codecs
 import lxml.etree as ET
@@ -13,31 +13,9 @@ parser.add_argument('--max_corpus_size', type=int, default=1000000000, help='the
 args = parser.parse_args()
 
 lcode = args.lcode
-if lcode == 'ko':
-    from konlpy.tag import Kkma # pip install konlpy. See http://konlpy.org/en/v0.4.4/ for further information.
-    kkma = Kkma()
-    print "kkma succesfuly loaded!"
-elif lcode == 'ja':
-    import MeCab # See https://pypi.python.org/pypi/mecab-python/0.996
-    mecab = MeCab.Tagger("-Owakati")
-    print "mecab succesfuly loaded!"
-elif lcode == 'zh':
+if lcode == 'zh':
     import jieba # See https://pypi.python.org/pypi/jieba/
-    print "jieba succesfuly loaded!"
-elif lcode == 'vi':
-    from pyvi.pyvi import ViTokenizer # See https://pypi.python.org/pypi/pyvi
-    print "pyvi succesfuly loaded!"
-elif lcode == 'th':  
-    import pythai # See https://pypi.python.org/pypi/pythai  
-    print "pythai succesfuly loaded!"
-# elif lcode == 'ar':
-#     os.environ['CLASSPATH'] = "../stanford-segmenter-2015-12-09"
-#     from nltk.tokenize.stanford_segmenter import StanfordSegmenter
-#     segmenter = StanfordSegmenter(path_to_jar="../stanford-segmenter-2015-12-09/stanford-segmenter-3.6.0.jar", 
-#                                path_to_sihan_corpora_dict="../stanford-segmenter-2015-12-09/data", 
-#                                path_to_model="../stanford-segmenter-2015-12-09/data/pku.gz", 
-#                                path_to_dict="../stanford-segmenter-2015-12-09/data/dict-chris6.ser.gz")
-#     print "StanfordSegmenter succesfuly loaded!"
+    print("jieba succesfuly loaded!")
     
 max_corpus_size = args.max_corpus_size
 fname = "{}wiki-20161201-pages-articles-multistream.xml".format(lcode)    
@@ -58,28 +36,8 @@ def clean_text(text):
     text = regex.sub("[']{3}", "", text) # remove bold symbols
     text = regex.sub("[']{2}", "", text) # remove italic symbols
     
-    if lcode in ['ko']: # korean
-        text = regex.sub(u"[^ \r\n\p{Hangul}.?!]", " ", text) # Replace unacceptable characters with a space.
-    elif lcode in ['ja']: # japanese
-        text = regex.sub(u"[^\r\n\p{Han}\p{Hiragana}\p{Katakana}ー。！？]", "", text)
-    elif lcode in ['zh']: # chinsese
+    if lcode in ['zh']: # chinsese
         text = regex.sub(u"[^\r\n\p{Han}。！？]", "", text)
-    elif lcode in ['th']: # thai
-        text = regex.sub(u"[^ \r\n\p{Thai}.?!]", " ", text)
-    elif lcode in ['ru']: # russian
-        text = regex.sub(u"[^ \r\n\p{Cyrillic}.?!\-]", " ", text)
-        text = text.lower()
-#     elif lcode in ['ar']: # arabic
-#         text = regex.sub(u"[^ \r\n\p{Arabic}.?!\-]", " ", text)
-    elif lcode in ['hi']: # hindi
-        text = regex.sub(u"[^ \r\n\p{Devanagari}.।?!\-]", " ", text)
-    elif lcode in ['bn']: # bengali
-        text = regex.sub(u"[^ \r\n\p{Bengali}.।?!\-]", " ", text)
-    elif lcode in ['de']: # german
-        text = regex.sub(u"[^ \r\n\p{Latin}\-'‘’.?!]", " ", text)
-    else: # Mostly european languages
-        text = regex.sub(u"[^ \r\n\p{Latin}\-'‘’.?!]", " ", text)
-        text = text.lower()
     
     # Common
     text = regex.sub("[ ]{2,}", " ", text) # Squeeze spaces.
@@ -96,15 +54,6 @@ def sentence_segment(text):
     global lcode
     if lcode in ['ja', 'zh']:
         sents = regex.split(u"([。！？])?[\n]+|[。！？]", text) 
-    elif lcode in ['th']:
-        sents = text.split("[\n]+") 
-    elif lcode in ['hi', 'bn']: # hindi, bengali
-        sents = regex.split(u"([.।?!])?[\n]+|[.।?!] ", text)
-    elif lcode in ['de']: # german
-        sents = regex.split("([.?!])?[\n]+|[.?!] ", text)
-        sents = [sent[0].lower() + sent[1:] for sent in sents if sent is not None and len(sent) > 1]
-    else:
-        sents = regex.split("([.?!])?[\n]+|[.?!] ", text)
     return sents
         
 def word_segment(sent):
@@ -116,21 +65,8 @@ def word_segment(sent):
       A list of words.
     '''
     global lcode
-    if lcode in ['ko']:
-        words = [word for word, _ in kkma.pos(sent)]
-    elif lcode in ['ja']:
-        words = mecab.parse(sent.encode('utf8')).split() 
-    elif lcode in ['th']:
-        words = pythai.split(sent)
-    elif lcode in ['vi']:
-        words = ViTokenizer.tokenize(sent).split()        
-    elif lcode in ['zh']:
-        words = list(jieba.cut(sent, cut_all=False)) 
-#     elif lcode in ['ar']:
-#         words = segmenter.segment(sent).split()
-    else: # Mostly european languages
-        words = sent.split()
-    
+    if lcode in ['zh']:
+        words = list(jieba.cut(sent, cut_all=False))    
     return words
 
 def build_corpus():
@@ -157,7 +93,7 @@ def build_corpus():
                 continue # it's okay as we have a pretty big corpus!
             elem.clear() # We need to save memory!
             if i % 1000 == 0: 
-                print i,
+                print(i,)
                 fsize = os.path.getsize("data/{}.txt".format(lcode))
                 if fsize > max_corpus_size:
                     break
@@ -166,4 +102,4 @@ def build_corpus():
 if __name__ == "__main__":
     build_corpus()
     
-    print "Done"
+    print("Done")
