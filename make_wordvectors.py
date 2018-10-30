@@ -40,7 +40,7 @@ def get_min_count(sents):
 def make_wordvectors():
     global lcode
     import gensim # In case you have difficulties installing gensim, you need to consider installing conda.
-    import cPickle as pickle
+    import _pickle as pickle
      
     print("Making sentences as list...")
     sents = []
