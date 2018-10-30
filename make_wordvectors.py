@@ -1,5 +1,5 @@
 # coding: utf-8
-#!/usr/bin/python2
+#!/usr/bin/python3
 import nltk
 import os
 import codecs
@@ -42,7 +42,7 @@ def make_wordvectors():
     import gensim # In case you have difficulties installing gensim, you need to consider installing conda.
     import cPickle as pickle
      
-    print "Making sentences as list..."
+    print("Making sentences as list...")
     sents = []
     with codecs.open('data/{}.txt'.format(lcode), 'r', 'utf-8') as fin:
         while 1:
@@ -52,7 +52,7 @@ def make_wordvectors():
             words = line.split()
             sents.append(words)
 
-    print "Making word vectors..."   
+    print("Making word vectors...")
     min_count = get_min_count(sents)
     model = gensim.models.Word2Vec(sents, size=vector_size, min_count=min_count,
                                    negative=num_negative, 
@@ -69,4 +69,4 @@ def make_wordvectors():
 if __name__ == "__main__":
     make_wordvectors()
     
-    print "Done"
+    print("Done")
